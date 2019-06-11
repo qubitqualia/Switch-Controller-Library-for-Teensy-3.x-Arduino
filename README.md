@@ -12,5 +12,7 @@ The current version is Beta-1.0. Not all features of the library have been evalu
 The Switch Control Library is intended to be used for hobby purposes only.  Under no circumstances should it be used for applications that could potentially threaten life, safety or environment.  The author assumes no responsibility for any damages caused by real-world devices/equipment controlled using this library.
 
 ## Usage
+![Example Circuit](/example_circuit.bmp)
 
+In the above example, there are two SPST switches, one SPDT switch and one SP3T switch with input signals feeding into pull-up pins on a Teensy 3.6.  When a particular switch position is in the “active” state, it means that its associated pull-up pin is pulled LOW.  Let’s configure our system to work in the following manner:
 
