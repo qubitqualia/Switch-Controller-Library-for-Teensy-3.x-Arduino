@@ -162,4 +162,4 @@ void setup()
 Switch::update() handles all switch functionality in a non-blocking manner. It must be called in the loop block.  Additional functions are available to pause/resume one or more switches, print the current status of switches and trigger switches from external class.
 
 ## Example Program Behavior
-
+![Behavior](/example_behavior2.bmp)
