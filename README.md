@@ -16,7 +16,7 @@ The Switch Control Library is intended to be used for hobby purposes only.  Unde
 
 In the above example, there are two SPST switches, one SPDT switch and one SP3T switch with input signals feeding into pull-up pins on a Teensy 3.6.  When a particular switch position is in the “active” state, it means that its associated pull-up pin is pulled LOW.  Let’s configure our system to work in the following manner:
 
-![Switch Table](/switch_table2.png)
+![Switch Table](/example_table.bmp)
 
 The system above can be setup in two different ways depending on user preference:
 
@@ -39,54 +39,47 @@ elapsedMillis dt;
 void setup()
 {
 	Serial.begin(115200);
-	
-	//Define pins for Heater
+
 	heater.defineInputPin(2);
-	heater.defineOutputPins(23);
-	
-	//Define pins for Camera
+	heater.defineOutputPins(24);
+
 	camera.defineInputPin(3);
-	camera.defineOutputPins(24);
-	
-	//Define pins for Fan
+	camera.defineOutputPins(25);
+
 	fan.setPositionName(0, "Low Speed");
 	fan.setPositionName(1, "High Speed");
 	fan.defineInputPin("Low Speed", 4);
-	fan.defineOutputPins("Low Speed", 25);
+	fan.defineOutputPins("Low Speed", 26);
 	fan.defineInputPin("High Speed", 5);
-	fan.defineOutputPins("High Speed", 26);
-	
-	//Define pins for Lights
+	fan.defineOutputPins("High Speed", 27);
+
 	lights.setPositionName(0, "Day Mode");
 	lights.setPositionName(1, "Night Mode");
 	lights.setPositionName(2, "Timer");
-	lights.defineInputPin("Day Mode", 28);
-	lights.defineOutputPins("Day Mode", 37);
-	lights.defineInputPin("Night Mode", 29);
-	lights.defineOutputPins("Night Mode", 38);
-	lights.defineOutputPins("Timer", 37);
-	
-	//Configure alarm for Fan
-	fan.addAlarm(SwitchAlarm::Stopwatch, "Low Speed");
+	lights.defineInputPin("Day Mode", 6);
+	lights.defineOutputPins("Day Mode", 28);
+	lights.defineInputPin("Night Mode", 7);
+	lights.defineOutputPins("Night Mode", 30);
+	lights.defineOutputPins("Timer", 28);
+
+	fan.addAlarm(SwitchAlarm::Stopwatch_Interval, "Low Speed");
 	fan.setAlarm("Low Speed", 100000, 10000);
 
-	//Add external trigger for Camera
-	fan.addAlarm(SwitchAlarm::External);
-	
-	//Configure alarm for Lights
+	fan.addAlarm(SwitchAlarm::Stopwatch_Clock, "High Speed");
+	fan.setAlarm("High Speed", "13:38:00", 10000);
+
 	lights.addAlarm(SwitchAlarm::Toggler, "Timer");
-	lights.setAlarm("Timer", "07:00:00", "19:01:00");
-	
-	//Set active input and output logic levels for switches
+	lights.setAlarm("Timer", "13:36:30", "13:37:30");
+
 	Switch::_setInputActiveLevelAll(LOW);
 	Switch::_setOutputActiveLevelAll(LOW);
-	
-	//Provide current utc unix time to Timer class
-	timer.setCurrentTime(1559851450);
-	
-	//Initialize switches	
+
+	timer.setTimeZone("Eastern");
+	timer.setDST(true );
+	timer.setCurrentTime(1561224930);  
+
 	Switch::init(&timer);
-	
+
 	dt = 0;
 }
 ```
@@ -98,12 +91,13 @@ void setup()
 #include "Timer.h"
 #include "string_Teensy.h"
 
+
 Switch switch1(SwitchType::SPST, "Heater");
 Switch switch2(SwitchType::SPST, "Camera");
 Switch switch3(SwitchType::SPDT, "Fan", "Low Speed", "High Speed");
 Switch switch4(SwitchType::SP3T, "Lights", "Day Mode", "Night Mode", "Timer");
 
-Timer;
+Timer timer;
 elapsedMillis dt;
 
 void setup()
@@ -111,51 +105,55 @@ void setup()
 	Serial.begin(115200);
 	delay(6000);
 	Serial.println("Switch Test Begin...");
-
 	//Define pins for Heater
 	Switch::_defineInputPin("Heater", 2);
-	Switch::_defineOutputPins("Heater", 23);
+	Switch::_defineOutputPins("Heater", 24);
 
 	//Define pins for Camera
 	Switch::_defineInputPin("Camera", 3);
-	Switch::_defineOutputPins("Camera", 24);
+	Switch::_defineOutputPins("Camera", 25);
 
 	//Define pins for Fan
 	Switch::_defineInputPin("Fan", "Low Speed", 4);
-	Switch::_defineOutputPins("Fan", "Low Speed", 25);
+	Switch::_defineOutputPins("Fan", "Low Speed", 26);
 	Switch::_defineInputPin("Fan", "High Speed", 5);
-	Switch::_defineOutputPins("Feeder", "High Speed", 26);
+	Switch::_defineOutputPins("Feeder", "High Speed", 27);
 
 	//Define pins for Lights
-	Switch::_defineInputPin("Lights", "Day Mode", 28);
-	Switch::_defineOutputPins("Lights", "Day Mode", 37);
-	Switch::_defineInputPin("Lights", "Night Mode", 29);
-	Switch::_defineOutputPins("Lights", "Night Mode", 38);
-	Switch::_defineOutputPins("Lights", "Timer", 37);
+	Switch::_defineInputPin("Lights", "Day Mode", 6);
+	Switch::_defineOutputPins("Lights", "Day Mode", 28);
+	Switch::_defineInputPin("Lights", "Night Mode", 7);
+	Switch::_defineOutputPins("Lights", "Night Mode", 30);
+	Switch::_defineOutputPins("Lights", "Timer", 28);
 
-	//Configure alarm for Fan
-	Switch::_addAlarm(SwitchAlarm::Stopwatch, "Fan", "Low Speed");
+	//Configure alarm for Low-Speed Fan Position
+	Switch::_addAlarm(SwitchAlarm::Stopwatch_Interval, "Fan", "Low Speed");
 	Switch::_setAlarm("Fan", "Low Speed", 100000, 10000);
+	
+	//Configure alarm for High-Speed Fan Position
+	Switch::_addAlarm(SwitchAlarm::Stopwatch_Clock, "Fan", "High Speed");
+	Switch::_setAlarm("Fan", "High Speed", "13:38:00", 10000);
 
 	//Add external trigger alarm for Camera
 	Switch::_addAlarm(SwitchAlarm::External, "Camera");
 
 	//Configure alarm for Lights
 	Switch::_addAlarm(SwitchAlarm::Toggler, "Lights", "Timer");
-	Switch::_setAlarm("Lights", "Timer", "07:00:00", "19:01:00");
+	Switch::_setAlarm("Lights", "Timer", "13:36:30", "13:37:30");
 
 	//Set active input and output logic levels for switches
 	Switch::_setInputActiveLevelAll(LOW);
 	Switch::_setOutputActiveLevelAll(LOW);
 
 	//Provide current utc unix time to Timer class
-	timer.setCurrentTime(1559851450);
+	timer.setTimeZone("Eastern");
+	timer.setDST(true);
+	timer.setCurrentTime(1561224930);
 	
 	//Initialize switches
 	Switch::init(&timer);
 	
 	dt = 0;
-
 }
 ```
 ## Loop Methods
